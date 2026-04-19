@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #F8F7F4;
+    color: #1A1A18;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, .font-display {
+    font-family: 'Syne', sans-serif;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white border border-border rounded-xl p-5 shadow-card;
+  }
+  .btn-primary {
+    @apply bg-accent text-white font-display font-medium text-sm px-4 py-2 rounded-lg hover:bg-accent-hover transition-colors flex items-center gap-2;
+  }
+  .btn-ghost {
+    @apply bg-transparent text-[#1A1A18] border border-border font-display font-medium text-sm px-4 py-2 rounded-lg hover:bg-surface-secondary transition-colors flex items-center gap-2;
+  }
+  .input {
+    @apply w-full border border-border rounded-lg px-3 py-2 text-sm font-sans bg-white focus:outline-none focus:border-accent transition-colors;
+  }
+  .tag {
+    @apply inline-flex items-center px-2 py-0.5 rounded-md text-xs font-display font-medium;
+  }
+  .tag-blue { @apply bg-accent-light text-accent; }
+  .tag-green { @apply bg-emerald-50 text-emerald-700; }
+  .tag-warn { @apply bg-amber-50 text-amber-700; }
+  .tag-red { @apply bg-red-50 text-red-700; }
+  .tag-gray { @apply bg-surface-secondary text-muted; }
+  .score-high { @apply text-emerald-700; }
+  .score-mid { @apply text-amber-600; }
+  .score-low { @apply text-red-600; }
+  .nav-item {
+    @apply flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-muted cursor-pointer transition-all mx-1.5 hover:bg-surface-secondary hover:text-[#1A1A18];
+  }
+  .nav-item.active {
+    @apply bg-accent-light text-accent font-medium;
+  }
+  .section-label {
+    @apply text-[10px] font-display font-medium text-muted uppercase tracking-widest px-3 pt-3 pb-1;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D3D1C7; border-radius: 3px; }
+
+/* Score bar animation */
+.score-fill { transition: width 0.6s ease; }
+
+/* Skeleton loader */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #E4E3DF 25%, #F2F1EE 50%, #E4E3DF 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 4px;
+}
