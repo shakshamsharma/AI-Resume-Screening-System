@@ -82,15 +82,7 @@ This index helps you navigate all the documentation for the AI Resume Screening 
    - **Length:** 1,500+ words
    - **Audience:** DevOps, System Administrators
 
-6. **[docs/VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md)** 🚀 **NEW**
-   - Vercel + Railway deployment guide
-   - Hybrid deployment strategy
-   - Fix 404 errors on Vercel
-   - Step-by-step instructions
-   - **Length:** 2,000+ words
-   - **Audience:** Developers, DevOps
-
-7. **[setup_production_fixes.sh](setup_production_fixes.sh)** 🔧
+6. **[setup_production_fixes.sh](setup_production_fixes.sh)** 🔧
    - Automated setup script
    - Installs dependencies
    - Runs migrations
@@ -101,7 +93,7 @@ This index helps you navigate all the documentation for the AI Resume Screening 
 
 ### For Reference
 
-8. **[docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** 📋 **PRINT THIS**
+7. **[docs/QUICK_REFERENCE.md](docs/QUICK_REFERENCE.md)** 📋 **PRINT THIS**
    - Quick reference card
    - Key endpoints
    - Common issues
@@ -110,7 +102,7 @@ This index helps you navigate all the documentation for the AI Resume Screening 
    - **Length:** 500+ words
    - **Audience:** Developers (daily use)
 
-9. **[docs/IMPLEMENTATION_SUMMARY.md](docs/IMPLEMENTATION_SUMMARY.md)** 📊
+8. **[docs/IMPLEMENTATION_SUMMARY.md](docs/IMPLEMENTATION_SUMMARY.md)** 📊
    - High-level overview
    - Files changed
    - Impact metrics
@@ -118,7 +110,7 @@ This index helps you navigate all the documentation for the AI Resume Screening 
    - **Length:** 2,000+ words
    - **Audience:** Project Managers, Stakeholders
 
-10. **[docs/PROJECT_COMPLETION_SUMMARY.md](docs/PROJECT_COMPLETION_SUMMARY.md)** 🎉
+9. **[docs/PROJECT_COMPLETION_SUMMARY.md](docs/PROJECT_COMPLETION_SUMMARY.md)** 🎉
    - Project completion report
    - Deliverables checklist
    - Success metrics
