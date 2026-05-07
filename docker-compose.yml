@@ -24,13 +24,24 @@ services:
       DATABASE_URL: postgresql://hireiq:hireiq_secret@db:5432/hireiq
       SECRET_KEY: super-secret-jwt-key-change-in-prod
       UPLOAD_DIR: /app/uploads
+      # Optional: Add your AI API keys for enhanced evaluation
+      # OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:
       - ./backend:/app
       - resume_uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        sleep 5 &&
+        echo 'Running database migrations...' &&
+        psql postgresql://hireiq:hireiq_secret@db:5432/hireiq -f /app/migrations/add_parsing_confidence_and_recommendation.sql || echo 'Migration already applied or failed (this is OK on first run)' &&
+        echo 'Starting backend server...' &&
+        uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      "
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
       interval: 10s

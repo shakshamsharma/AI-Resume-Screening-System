@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import { jobsApi } from '../utils/api'
 import { Card, CardTitle, EmptyState } from '../components/ui'
-import { Plus, Users, ChevronRight, Briefcase } from 'lucide-react'
+import { Plus, Users, ChevronRight, Briefcase, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import type { Job } from '../types'
 
@@ -27,6 +27,24 @@ export default function JobsPage() {
     },
     onError: () => toast.error('Failed to create job'),
   })
+
+  const deleteMutation = useMutation({
+    mutationFn: (jobId: string) => jobsApi.delete(jobId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['jobs'] })
+      toast.success('Job deleted successfully!')
+    },
+    onError: () => toast.error('Failed to delete job'),
+  })
+
+  const handleDelete = (e: React.MouseEvent, jobId: string, jobTitle: string) => {
+    e.preventDefault() // Prevent navigation
+    e.stopPropagation()
+    
+    if (window.confirm(`Are you sure you want to delete "${jobTitle}"?\n\nThis will also delete all associated resumes and candidates.`)) {
+      deleteMutation.mutate(jobId)
+    }
+  }
 
   const [form, setForm] = useState({
     title: '', department: '', description: '',
@@ -136,34 +154,44 @@ export default function JobsPage() {
       ) : jobs && jobs.length > 0 ? (
         <div className="grid grid-cols-3 gap-4">
           {jobs.map((job) => (
-            <Link
-              key={job.id}
-              to={`/candidates?job=${job.id}`}
-              className="card hover:border-accent/40 hover:shadow-md transition-all group cursor-pointer block"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-9 h-9 bg-accent-light rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Briefcase size={15} className="text-accent" />
+            <div key={job.id} className="card hover:border-accent/40 hover:shadow-md transition-all group relative">
+              <Link
+                to={`/candidates?job=${job.id}`}
+                className="block"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-9 h-9 bg-accent-light rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Briefcase size={15} className="text-accent" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`tag text-[10px] ${job.status === 'active' ? 'tag-green' : job.status === 'paused' ? 'tag-warn' : 'tag-gray'}`}>
+                      {job.status}
+                    </span>
+                    <button
+                      onClick={(e) => handleDelete(e, job.id, job.title)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-50 rounded"
+                      title="Delete job"
+                    >
+                      <Trash2 size={14} className="text-red-500" />
+                    </button>
+                  </div>
                 </div>
-                <span className={`tag text-[10px] ${job.status === 'active' ? 'tag-green' : job.status === 'paused' ? 'tag-warn' : 'tag-gray'}`}>
-                  {job.status}
-                </span>
-              </div>
-              <div className="font-display font-medium text-sm mb-0.5">{job.title}</div>
-              <div className="text-xs text-muted mb-3">{job.department} · {job.experience_min}–{job.experience_max} yrs</div>
-              <div className="flex flex-wrap gap-1 mb-3">
-                {(job.required_skills || []).slice(0, 3).map((s) => (
-                  <span key={s} className="tag tag-gray text-[10px]">{s}</span>
-                ))}
-                {(job.required_skills || []).length > 3 && (
-                  <span className="tag tag-gray text-[10px]">+{job.required_skills.length - 3}</span>
-                )}
-              </div>
-              <div className="flex items-center justify-between text-xs text-muted pt-2.5 border-t border-border">
-                <span className="flex items-center gap-1"><Users size={12} />{job.candidate_count ?? 0} applicants</span>
-                <ChevronRight size={13} className="group-hover:text-accent transition-colors" />
-              </div>
-            </Link>
+                <div className="font-display font-medium text-sm mb-0.5">{job.title}</div>
+                <div className="text-xs text-muted mb-3">{job.department} · {job.experience_min}–{job.experience_max} yrs</div>
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {(job.required_skills || []).slice(0, 3).map((s) => (
+                    <span key={s} className="tag tag-gray text-[10px]">{s}</span>
+                  ))}
+                  {(job.required_skills || []).length > 3 && (
+                    <span className="tag tag-gray text-[10px]">+{job.required_skills.length - 3}</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-xs text-muted pt-2.5 border-t border-border">
+                  <span className="flex items-center gap-1"><Users size={12} />{job.candidate_count ?? 0} applicants</span>
+                  <ChevronRight size={13} className="group-hover:text-accent transition-colors" />
+                </div>
+              </Link>
+            </div>
           ))}
         </div>
       ) : (

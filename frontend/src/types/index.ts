@@ -29,6 +29,7 @@ export interface Candidate {
   education_institution?: string
   current_company?: string
   current_role?: string
+  current_title?: string
   skills: string[]
   certifications: string[]
   overall_score: number
@@ -38,8 +39,11 @@ export interface Candidate {
   industry_score: number
   certification_score: number
   location_score: number
+  parsing_confidence?: number
   ai_summary?: string
   ai_fit_explanation?: string
+  ai_recommendation?: 'strong_yes' | 'yes' | 'maybe' | 'no'
+  ai_recommendation_reasoning?: string
   trainability_score: number
   status: string
   rank_position?: number
@@ -69,11 +73,14 @@ export interface Resume {
   id: string
   filename: string
   file_type: string
-  parse_status: 'pending' | 'parsing' | 'done' | 'failed'
+  parse_status: 'pending' | 'parsing' | 'done' | 'failed' | 'duplicate'
   is_duplicate: boolean
   is_flagged: boolean
   flag_reason?: string
   uploaded_at?: string
+  candidate_id?: string
+  candidate_name?: string
+  overall_score?: number
 }
 
 export interface DashboardAnalytics {

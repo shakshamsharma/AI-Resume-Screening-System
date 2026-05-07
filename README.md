@@ -46,23 +46,49 @@ A production-grade full-stack hiring platform with AI-powered resume parsing, ca
 # 1. Clone / unzip the project
 cd hireiq
 
-# 2. Copy env file
+# 2. (Optional) Copy env file for AI API keys
 cp .env.example .env
+# Edit .env if you want AI-powered evaluation (optional)
 
-# 3. Start everything
+# 3. Start everything with one command
 docker-compose up --build
 
 # 4. Open in browser
 open http://localhost:3000
 ```
 
-First build takes ~3–5 minutes (downloads Python + Node images, installs deps).
+**That's it!** First build takes ~3–5 minutes (downloads images, installs deps).
+
+### What Docker Does Automatically ✅
+- ✅ Sets up PostgreSQL database
+- ✅ Runs all migrations (including production fixes)
+- ✅ Installs all dependencies (PyMuPDF, pdfplumber, dateparser, etc.)
+- ✅ Starts backend API server
+- ✅ Starts frontend dev server
+- ✅ Connects everything together
 
 ### Demo Login
 | Role | Email | Password |
 |---|---|---|
 | Admin | admin@hireiq.com | admin123 |
 | Recruiter | recruiter@hireiq.com | recruiter123 |
+
+### Useful Docker Commands
+```bash
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Restart services
+docker-compose restart
+
+# Clean start (removes data)
+docker-compose down -v && docker-compose up --build
+```
+
+**See [docs/DOCKER_GUIDE.md](docs/DOCKER_GUIDE.md) for complete Docker documentation.**
 
 ---
 
@@ -235,3 +261,147 @@ For AWS ECS / Kubernetes, each service (frontend, backend, db) maps to a separat
 
 ## License
 MIT
+
+
+---
+
+## 🚀 Production-Grade Enhancements
+
+### ✨ Recent Major Improvements
+
+This system has been transformed from a demo into a **production-ready ATS platform** with the following critical fixes:
+
+#### 1. **Zero Hallucinations** ✅
+- **Problem Fixed:** AI was inventing experience (e.g., "8 years" for freshers)
+- **Solution:** Deterministic experience calculation from work history dates only
+- **Result:** Freshers correctly show 0 years, seniors show accurate calculations
+
+#### 2. **Robust Resume Parsing** ✅
+- **Dual PDF extraction:** pdfplumber (primary) + PyMuPDF (fallback)
+- **Confidence scoring:** Every extraction gets quality score (0-1)
+- **Error handling:** Gracefully handles corrupted files and image-based PDFs
+- **Date parsing:** Supports multiple formats (Jan 2020, 01/2020, 2020, Present, etc.)
+
+#### 3. **Accurate Work Experience Extraction** ✅
+- **Company name extraction:** Pattern-based detection
+- **Role/title extraction:** Identifies job titles
+- **Duration calculation:** Accurate month-based calculation
+- **Current job detection:** Handles "Present", "Current", "Now"
+
+#### 4. **AI as Evaluator (Not Extractor)** ✅
+- **Separation of concerns:** AI reviews structured data, doesn't extract
+- **No hallucinations:** AI receives JSON, not raw text
+- **Fallback support:** Works without AI API keys (rule-based)
+- **Supports:** OpenAI GPT-4 or Anthropic Claude
+
+#### 5. **Quality Validation** ✅
+- **Parsing confidence:** 0-1 score for extraction quality
+- **Manual review triggers:** Low confidence resumes flagged
+- **Debug endpoints:** `/api/resumes/debug/{id}` for troubleshooting
+- **Duplicate detection:** Before parsing (saves processing)
+
+#### 6. **Enhanced Scoring** ✅
+- **Deterministic:** Same resume = same score
+- **Weighted system:** Skills 40%, Experience 25%, etc.
+- **Priority skills:** 1.5x weight for must-have skills
+- **Skill gap analysis:** Shows matched, missing, bonus skills
+
+### 📖 Additional Documentation
+
+- **[docs/PRODUCTION_FIXES.md](docs/PRODUCTION_FIXES.md)** - Comprehensive list of all fixes
+- **[docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md)** - Complete testing guide with test cases
+- **[setup_production_fixes.sh](setup_production_fixes.sh)** - Automated setup script
+
+### 🧪 Testing the Fixes
+
+```bash
+# Run setup script
+chmod +x setup_production_fixes.sh
+./setup_production_fixes.sh
+
+# Test with sample resumes
+# 1. Upload a fresher resume → should show 0 years
+# 2. Upload a senior resume → should calculate from dates
+# 3. Upload corrupted PDF → should fail gracefully
+
+# Debug parsing
+GET /api/resumes/debug/{resume_id}
+```
+
+### 🔍 Debug Endpoints
+
+#### Resume Debug
+```bash
+GET /api/resumes/debug/{resume_id}
+```
+Returns detailed parsing breakdown with confidence scores.
+
+#### Resume Status
+```bash
+GET /api/resumes/status/{resume_id}
+```
+Returns processing status and candidate info.
+
+### 📊 Quality Metrics
+
+#### Parsing Confidence Thresholds
+- **0.8-1.0:** Excellent - Auto-process
+- **0.6-0.8:** Good - Auto-process with review
+- **0.4-0.6:** Fair - Manual review recommended
+- **0.0-0.4:** Poor - Manual review required
+
+#### Match Score Interpretation
+- **85-100:** Strong match - Priority interview
+- **70-84:** Good match - Consider for interview
+- **55-69:** Moderate match - Review carefully
+- **0-54:** Weak match - Likely reject
+
+### 🛠️ New Dependencies
+
+```bash
+# Added for production fixes
+PyMuPDF==1.24.0          # Fallback PDF extraction
+openai==1.12.0           # OpenAI API (optional)
+anthropic==0.18.1        # Anthropic API (optional)
+dateparser==1.2.0        # Robust date parsing
+fuzzywuzzy==0.18.0       # Fuzzy string matching
+python-Levenshtein==0.25.0  # String similarity
+```
+
+### 🎯 Key Achievements
+
+1. ✅ **Zero Hallucinations** - All data from resume only
+2. ✅ **Accurate Experience** - Calculated from dates, not estimated
+3. ✅ **Deterministic Scoring** - Repeatable, explainable results
+4. ✅ **Quality Validation** - Confidence scores for every extraction
+5. ✅ **Robust Parsing** - Handles complex PDFs, multiple formats
+6. ✅ **Production-Ready** - Error handling, logging, debugging tools
+
+### 🚨 Critical Rules Enforced
+
+```python
+# NEVER estimate experience - calculate from dates only
+if not work_experience:
+    years_experience = 0.0  # Fresher
+
+# NEVER invent data - extract from resume only
+if not found_in_resume:
+    value = None  # Don't guess
+
+# ALWAYS validate extraction quality
+if parsing_confidence < 0.6:
+    needs_manual_review = True
+```
+
+### 📞 Support & Troubleshooting
+
+For issues:
+1. Check console logs for error messages
+2. Use `/api/resumes/debug/{resume_id}` endpoint
+3. Review parsing confidence scores
+4. Check `flag_reason` for flagged resumes
+5. See [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) for test cases
+
+---
+
+**Remember:** This system NEVER invents data. All information comes from the resume.

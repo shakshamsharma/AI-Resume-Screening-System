@@ -89,6 +89,29 @@ def rank_candidates(job_id: str, db: Session = Depends(get_db), current_user: mo
     return {"ranked": len(sorted_cands), "top_3": [{"name": c.full_name, "score": c.overall_score} for c in sorted_cands[:3]]}
 
 
+@router.delete("/{candidate_id}")
+def delete_candidate(candidate_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    """
+    Delete a candidate and optionally their resume.
+    """
+    candidate = db.query(models.Candidate).filter(models.Candidate.id == candidate_id).first()
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+    
+    # Get resume
+    resume = db.query(models.Resume).filter(models.Resume.id == candidate.resume_id).first()
+    
+    # Delete candidate (cascade will delete work_experience and interviews)
+    db.delete(candidate)
+    db.commit()
+    
+    return {
+        "message": "Candidate deleted successfully",
+        "id": candidate_id,
+        "resume_id": str(resume.id) if resume else None
+    }
+
+
 def _candidate_out(c: models.Candidate) -> dict:
     return {
         "id": str(c.id),
@@ -112,8 +135,11 @@ def _candidate_out(c: models.Candidate) -> dict:
         "industry_score": c.industry_score,
         "certification_score": c.certification_score,
         "location_score": c.location_score,
+        "parsing_confidence": c.parsing_confidence,
         "ai_summary": c.ai_summary,
         "ai_fit_explanation": c.ai_fit_explanation,
+        "ai_recommendation": c.ai_recommendation,
+        "ai_recommendation_reasoning": c.ai_recommendation_reasoning,
         "trainability_score": c.trainability_score,
         "status": c.status,
         "rank_position": c.rank_position,

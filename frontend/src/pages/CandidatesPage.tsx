@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link, useSearchParams } from 'react-router-dom'
 import { candidatesApi, jobsApi } from '../utils/api'
 import { ScoreBar, RankBadge, StatusPill, EmptyState, Card } from '../components/ui'
-import { Search, Filter, Download, RefreshCw } from 'lucide-react'
+import { Search, Filter, Download, RefreshCw, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import type { Candidate, Job } from '../types'
 
@@ -54,6 +54,24 @@ export default function CandidatesPage() {
     mutationFn: ({ id, status }: { id: string; status: string }) => candidatesApi.updateStatus(id, status),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['candidates'] }),
   })
+
+  const deleteMutation = useMutation({
+    mutationFn: (candidateId: string) => candidatesApi.delete(candidateId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['candidates'] })
+      toast.success('Candidate deleted successfully!')
+    },
+    onError: () => toast.error('Failed to delete candidate'),
+  })
+
+  const handleDelete = (e: React.MouseEvent, candidateId: string, candidateName: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (window.confirm(`Are you sure you want to delete "${candidateName}"?\n\nThis will permanently remove the candidate and their resume.`)) {
+      deleteMutation.mutate(candidateId)
+    }
+  }
 
   const scoreColor = (s: number) => s >= 80 ? 'text-emerald-700' : s >= 65 ? 'text-amber-600' : 'text-red-600'
 
@@ -154,7 +172,7 @@ export default function CandidatesPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border bg-surface-secondary">
-                {['#', 'Candidate', 'Experience', 'Skills', 'JD Match', 'Status', 'Action'].map((h) => (
+                {['#', 'Candidate', 'Experience', 'Skills', 'JD Match', 'Status', 'Actions'].map((h) => (
                   <th key={h} className="text-left text-[11px] font-display font-medium text-muted px-4 py-3 uppercase tracking-wider">
                     {h}
                   </th>
@@ -168,8 +186,17 @@ export default function CandidatesPage() {
                     <RankBadge rank={c.rank_position ?? idx + 1} />
                   </td>
                   <td className="px-4 py-3">
-                    <div className="font-display font-medium text-sm">{c.full_name || 'Unknown'}</div>
-                    <div className="text-[11px] text-muted">{c.current_company || c.email || '—'}</div>
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <div className="font-display font-medium text-sm">{c.full_name || 'Unknown'}</div>
+                        <div className="text-[11px] text-muted">{c.current_company || c.email || '—'}</div>
+                      </div>
+                      {c.parsing_confidence !== undefined && c.parsing_confidence < 0.6 && (
+                        <span className="tag tag-warn text-[9px]" title={`Parsing confidence: ${(c.parsing_confidence * 100).toFixed(0)}%`}>
+                          ⚠️ Review
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-xs text-muted">{c.years_experience?.toFixed(0) ?? 0} yrs</span>
@@ -188,10 +215,24 @@ export default function CandidatesPage() {
                     <ScoreBar score={c.overall_score} />
                   </td>
                   <td className="px-4 py-3">
-                    <StatusPill status={c.status} />
+                    <div className="flex items-center gap-1.5">
+                      <StatusPill status={c.status} />
+                      {c.ai_recommendation && (
+                        <span className={`text-[10px] font-medium ${
+                          c.ai_recommendation === 'strong_yes' ? 'text-emerald-600' :
+                          c.ai_recommendation === 'yes' ? 'text-blue-600' :
+                          c.ai_recommendation === 'maybe' ? 'text-amber-600' :
+                          'text-red-600'
+                        }`} title={c.ai_recommendation_reasoning}>
+                          {c.ai_recommendation === 'strong_yes' ? '✓✓' :
+                           c.ai_recommendation === 'yes' ? '✓' :
+                           c.ai_recommendation === 'maybe' ? '?' : '✗'}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <Link
                         to={`/candidates/${c.id}`}
                         className="text-xs text-accent hover:underline font-sans"
@@ -208,6 +249,14 @@ export default function CandidatesPage() {
                           <option key={s} value={s}>{s.replace('_', ' ')}</option>
                         ))}
                       </select>
+                      <span className="text-border">·</span>
+                      <button
+                        onClick={(e) => handleDelete(e, c.id, c.full_name || 'Unknown')}
+                        className="text-xs text-red-500 hover:text-red-700 font-sans"
+                        title="Delete candidate"
+                      >
+                        <Trash2 size={13} />
+                      </button>
                     </div>
                   </td>
                 </tr>

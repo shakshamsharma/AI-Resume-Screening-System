@@ -144,6 +144,52 @@ export default function CandidateDetailPage() {
               <div className="text-xs text-muted mt-1">Readiness for missing skills</div>
             </div>
           </Card>
+
+          {/* Parsing Confidence */}
+          {candidate.parsing_confidence !== undefined && (
+            <Card>
+              <CardTitle>Parsing Quality</CardTitle>
+              <div className="text-center">
+                <div className="text-3xl font-display font-medium" style={{
+                  color: candidate.parsing_confidence >= 0.8 ? '#2D7D52' : 
+                         candidate.parsing_confidence >= 0.6 ? '#C47F17' : '#C23B3B'
+                }}>
+                  {(candidate.parsing_confidence * 100).toFixed(0)}%
+                </div>
+                <div className="text-xs text-muted mt-1">
+                  {candidate.parsing_confidence >= 0.8 ? 'Excellent extraction' :
+                   candidate.parsing_confidence >= 0.6 ? 'Good extraction' :
+                   candidate.parsing_confidence >= 0.4 ? 'Fair - review recommended' :
+                   'Poor - manual review required'}
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* AI Recommendation */}
+          {candidate.ai_recommendation && (
+            <Card>
+              <CardTitle>AI Recommendation</CardTitle>
+              <div className="text-center">
+                <div className={`inline-block px-3 py-1.5 rounded-lg text-sm font-display font-medium mb-2 ${
+                  candidate.ai_recommendation === 'strong_yes' ? 'bg-emerald-100 text-emerald-700' :
+                  candidate.ai_recommendation === 'yes' ? 'bg-blue-100 text-blue-700' :
+                  candidate.ai_recommendation === 'maybe' ? 'bg-amber-100 text-amber-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {candidate.ai_recommendation === 'strong_yes' ? '✓ Strong Yes' :
+                   candidate.ai_recommendation === 'yes' ? '✓ Yes' :
+                   candidate.ai_recommendation === 'maybe' ? '? Maybe' :
+                   '✗ No'}
+                </div>
+                {candidate.ai_recommendation_reasoning && (
+                  <div className="text-xs text-muted mt-2 text-left">
+                    {candidate.ai_recommendation_reasoning}
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
         </div>
 
         {/* Right two columns */}

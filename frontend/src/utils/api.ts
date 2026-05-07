@@ -57,6 +57,7 @@ export const resumesApi = {
   },
   listForJob: (jobId: string) => api.get(`/resumes/job/${jobId}`),
   status: (resumeId: string) => api.get(`/resumes/status/${resumeId}`),
+  delete: (resumeId: string) => api.delete(`/resumes/${resumeId}`),
 }
 
 // ── Candidates ────────────────────────────────────────────────────────────────
@@ -67,6 +68,7 @@ export const candidatesApi = {
   updateStatus: (id: string, status: string) =>
     api.patch(`/candidates/${id}/status`, null, { params: { status } }),
   rank: (jobId: string) => api.post(`/candidates/job/${jobId}/rank`),
+  delete: (id: string) => api.delete(`/candidates/${id}`),
 }
 
 // ── Analytics ─────────────────────────────────────────────────────────────────
